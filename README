@@ -1,0 +1,43 @@
+The usual pattern is to do this in your class that has a delegate:
+
+-(void)frobnicate;
+{
+  ...
+  BOOL extraJuicy = NO;
+  if(delegate && [delegate respondsToSelector:@selector(frobnicatorShouldAddJuice:)])
+    extraJuicy = [delegate frobnicatorShouldAddJuice:self];
+  if(extraJuicy)
+    ...
+  ...
+}
+
+for every delegation method, which gets old, fast.
+
+
+With DelegationHelper, you can do this:
+// Setup
+@interface FrobnicatorDelegationHelper : DelegationHelper <FrobnicatorDelegate> {} @end
+
+@interface Frobnicator... { FrobnicatorDelegationHelper *delegate; ... } ...@end
+
+@implementation
+-(void)setDelegate:(id<FrobnicatorDelegate>)delegate_
+{
+  delegate = [[DelegationHelper alloc] init];
+  delegate.delegate = delegate_;
+  
+  [delegate setDefaultDelegationObject:BOOLobj(YES) forSelector:(frobnicatorShouldAddJuice:)];
+}
+
+// And then just...
+-(void)frobnicate;
+{
+  ...
+  if([delegate frobnicateShouldAddJuice:self])
+    ...
+  ...
+}
+
+Okay, the setup requires three extra lines and one line per selector (for defaults), but we've cut down the actual delegate calls from four lines to one! So if you have more than a single delegate method for your class, the DelegationHelper will help you.
+
+For more samples, see main.m.
